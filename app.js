@@ -11,6 +11,7 @@ firebase.initializeApp(config);
 
 var database = firebase.database();
 
+var trainCounter = 0;
 
 $("#submit").on("click", function (event) {
 
@@ -24,6 +25,24 @@ $("#submit").on("click", function (event) {
     var trainTime = $("#trainTime").val().trim();
     var frequency = $("#frequency").val().trim();
     var trains = new Array ();
+    frequency = parseInt(frequency);
+
+    var firstTimeConverted = moment(trainTime, "HH:mm").subtract(1, "years");
+    console.log("TIME CONVERTED: " + firstTimeConverted);
+
+    var diffTime = moment.duration(moment().diff(moment(trainTime, "HH:mm")),
+        'milliseconds').asMinutes();
+    console.log("DIFFERENCE IN TIME: " + diffTime);
+
+    var timeRemaining = frequency - (Math.floor(diffTime) % frequency);
+    console.log(timeRemaining);
+
+    var nextTrain = diffTime > 0 ? moment().add(timeRemaining, 'minutes' ) : moment(trainTime, "HH:mm") ;
+    console.log("ARRIVAL TIME: " + moment(nextTrain).format("HH:mm"));
+
+    var minTilTrain = Math.ceil(moment.duration(moment(nextTrain).diff(moment()), 'milliseconds').asMinutes());
+    console.log("MINUTES TILL TRAIN: " + minTilTrain);
+
 
     database.ref().on("value", function(snapshot) {
         console.log(snapshot.val());
@@ -60,24 +79,59 @@ $("#submit").on("click", function (event) {
             };
             trains.push(obj);
             console.log(trains);
-            console.log(moment(trainTime).startOf('hour').fromNow())
         }
     });
-    for (var i= 0; i < trains.length; i++){
 
-        console.log(trains[i]);
+        var row = $('<tr>');
 
-        $("tbody").append("<td>" + trains[i].name + "</td>");
-        $("tbody").append("<td>" + trains[i].destination + "</td>");
-        $("tbody").append("<td>" + trains[i].frequency + "</td>");
-        $("tbody").append("<td>" + trains[i].trainTime + "</td>");
-    };
+        var trainName = $('<td>');
+        trainName.text(name);
+        row.append(trainName);
 
-    function updatedTime (){
+        var trainPlace = $('<td>');
+        trainPlace.text(destination);
+        row.append(trainPlace);
+
+        var trainFreq = $('<td>');
+        trainFreq.text(frequency);
+        row.append(trainFreq);
+
+        var timing = $('<td>');
+        timing.text(moment(nextTrain).format("HH:mm"));
+        row.append(timing);
+
+        var minutesUntilNext = $('<td>');
+        minutesUntilNext.text(minTilTrain);
+        row.append(minutesUntilNext);
 
 
+
+
+      var trainLocalStorage = row.prop('outerHTML');
+    console.log(trainLocalStorage);
+    localStorage.setItem("data-train-" + trainCounter, trainLocalStorage);
+
+        name = $('#name').val("");
+        destination = $('#destination').val("");
+        trainTime = $('#trainTime').val("");
+        frequency = $('#frequency').val("");
+
+    $('tbody').append(trainLocalStorage);
+    trainCounter++;
+
+    return false;
+
+});
+
+$(document).ready(function() {
+
+    for (var i = 0; i < localStorage.length; i++) {
+        $('#trainTable').append(localStorage.getItem("data-train-" + trainCounter));
+        trainCounter++;
     }
 });
+
+
 
 
 
