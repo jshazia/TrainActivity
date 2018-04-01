@@ -104,9 +104,6 @@ $("#submit").on("click", function (event) {
         minutesUntilNext.text(minTilTrain);
         row.append(minutesUntilNext);
 
-
-
-
       var trainLocalStorage = row.prop('outerHTML');
     console.log(trainLocalStorage);
     localStorage.setItem("data-train-" + trainCounter, trainLocalStorage);
@@ -126,10 +123,13 @@ $("#submit").on("click", function (event) {
 $(document).ready(function() {
 
     for (var i = 0; i < localStorage.length; i++) {
-        $('#trainTable').append(localStorage.getItem("data-train-" + trainCounter));
+        $('tbody').append(localStorage.getItem("data-train-" + trainCounter));
         trainCounter++;
+
     }
 });
+
+
 
 
 
